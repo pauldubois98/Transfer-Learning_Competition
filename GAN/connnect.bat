@@ -1,1 +1,0 @@
-start putty.exe -ssh -N -L 8888:fusion-gpu02:8888 lhotter@ruche.mesocentre.universite-paris-saclay.fr
