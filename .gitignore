@@ -1,3 +1,18 @@
+data/CeterisParibusDataset
+data/fairface-img-margin025-trainval
+data/fairface-img-margin125-trainval
+data/FFHQ/dataset
+data/FFHQ/dataset.zip
+data/FFHQ/ffhq-dataset-v2.json
+data/FFHQ/labelsFFHQ.csv
+data/FFHQ/images1024x1024
+data/img_align_celeba
+
+reLabelling/CeterisParibusDataset
+reLabelling/CeterisParibusDatasetWithPts
+reLabelling/test
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
