@@ -7,6 +7,9 @@ data/FFHQ/ffhq-dataset-v2.json
 data/FFHQ/labelsFFHQ.csv
 data/FFHQ/images1024x1024
 data/img_align_celeba
+data/UTKface/raw
+data/UTKface/cropped
+data/UTKface/cropped.zip
 
 reLabelling/CeterisParibusDataset
 reLabelling/CeterisParibusDatasetWithPts
