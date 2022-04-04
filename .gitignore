@@ -10,6 +10,8 @@ data/img_align_celeba
 data/UTKface/raw
 data/UTKface/cropped
 data/UTKface/cropped.zip
+data/UTKface/sex_subfolders
+data/UTKface/sex_subfolders.zip
 
 reLabelling/CeterisParibusDataset
 reLabelling/CeterisParibusDatasetWithPts
