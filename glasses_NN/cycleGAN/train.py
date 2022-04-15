@@ -275,7 +275,7 @@ if __name__ == "__main__":
     config.SIZE = int(args.size)
     if config.SIZE > 512:
         config.BATCH_SIZE = 1
-    elif config.SIZE > 256:
+    elif config.SIZE > 256:  # i.e. between 256 & 512 because of the elif clause
         config.BATCH_SIZE = 3
 
     config.def_transforms()
