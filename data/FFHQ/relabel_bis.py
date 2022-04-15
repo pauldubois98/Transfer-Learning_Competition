@@ -43,8 +43,12 @@ eye_right_right_pt = 263
 eye_right_up_pt = 386
 eye_right_down_pt = 373
 
+contour_pts = np.array([10, 109,  67, 103,  54,  21, 162, 127, 234,  93, 132,  58, 172,
+                        136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397, 288,
+                        361, 323, 454, 356, 389, 251, 284, 332, 297, 338])
 
-foldername = "FFHQ/dataset"
+
+foldername = "dataset"
 
 face_mesh = mp_face_mesh.FaceMesh(
     static_image_mode=True,
@@ -62,8 +66,9 @@ filenames = []
 i = 0
 for filename in os.listdir(foldername)[:]:
     i += 1
-    if i % 1000 == 0:
-        df = pd.DataFrame({'filenames': filenames,
+    if i % 100 == 0:
+        print(i)
+        df = pd.DataFrame({'filename': filenames,
                            'nose_angle': nose_angles,
                            'nose_area': nose_areas,
                            'nose_width': nose_widths,
@@ -89,6 +94,14 @@ for filename in os.listdir(foldername)[:]:
             pca.fit(data)
             trans_data = pca.transform(data)
 
+            # face size
+            contour_data = data[contour_pts]
+            face_hull = ConvexHull(contour_data[:, :2])
+            face_area = face_hull.volume
+            center = np.mean(contour_data[:, :2], axis=0)
+            face_size = np.sqrt(
+                np.sum(np.mean((contour_data[:, :2]-center)**2, axis=0)))
+
             # nose angle
             nose_front_data = data[nose_front_pts]
             nose_base_data = data[nose_base_pts]
@@ -109,14 +122,14 @@ for filename in os.listdir(foldername)[:]:
             nose_hull = ConvexHull(trans_nose_data[:, :2])
             nose_area = nose_hull.volume
             # print("nose area:", nose_area)
-            nose_areas.append(nose_area)
+            nose_areas.append(nose_area/face_area)
 
             # nose width
             nose_left = trans_data[nose_left_pt]
             nose_right = trans_data[nose_right_pt]
             nose_width = np.linalg.norm(nose_left-nose_right)
             # print("nose_width:", nose_width)
-            nose_widths.append(nose_width)
+            nose_widths.append(nose_width/face_size)
 
             # lips area
             lower_lip = data[lower_lip_pts]
@@ -129,7 +142,7 @@ for filename in os.listdir(foldername)[:]:
             upper_lip_area = upper_lip_hull.volume
             lips_area = lower_lip_area + upper_lip_area
             # print("lips area:", lips_area)
-            lips_areas.append(lips_area)
+            lips_areas.append(lips_area/face_area)
 
             # eyes ratio
             left_eye_width = np.linalg.norm(
@@ -154,5 +167,10 @@ for filename in os.listdir(foldername)[:]:
             # filenames.append(filename)
             pass
 
-df = pd.DataFrame({'filenames': filenames, 'nose_angle': nose_angle})
-df.to_csv('labels.csv')
+df = pd.DataFrame({'filename': filenames,
+                   'nose_angle': nose_angles,
+                   'nose_area': nose_areas,
+                   'nose_width': nose_widths,
+                   'lips_area': lips_areas,
+                   'eyes_ratio': eyes_ratios})
+df.to_csv('labelsFFHQ.csv')
