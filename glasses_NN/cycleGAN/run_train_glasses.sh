@@ -23,9 +23,10 @@ one_sided_label_smoothing=(0.1 0.1 0.1 0.1 0.1 0.1)
 size=(512 512 512 1024 1024 1024)
 
 # Prints
-echo This is task $SLURM_ARRAY_TASK_ID
-echo lambda_identity = ${lambda_identity[$SLURM_ARRAY_TASK_ID]}
-echo one_sided_label_smoothing = ${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}
+echo This is task "$SLURM_ARRAY_TASK_ID"
+echo size = "${size[$SLURM_ARRAY_TASK_ID]}"
+echo lambda_identity = "${lambda_identity[$SLURM_ARRAY_TASK_ID]}"
+echo one_sided_label_smoothing = "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
 
 # Run python script
-python3.9 train.py ${lambda_identity[$SLURM_ARRAY_TASK_ID]} ${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]} glasses no_glasses ${size[$SLURM_ARRAY_TASK_ID]}
+python3.9 train.py "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" glasses no_glasses "${size[$SLURM_ARRAY_TASK_ID]}"
