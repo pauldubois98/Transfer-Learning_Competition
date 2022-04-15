@@ -273,10 +273,10 @@ if __name__ == "__main__":
     config.ZEBRAS_CLASS = args.zebras_class
 
     config.SIZE = int(args.size)
-    if config.SIZE > 256:
-        config.BATCH_SIZE = 3
     if config.SIZE > 512:
         config.BATCH_SIZE = 1
+    elif config.SIZE > 256:
+        config.BATCH_SIZE = 3
 
     config.def_transforms()
 
