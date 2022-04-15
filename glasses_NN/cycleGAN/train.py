@@ -123,7 +123,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
         gen_Z.eval()
         gen_H.eval()
         for idx, (zebra, horse) in enumerate(val_loader):
-            if idx <= max(5, len(val_loader)):  # on va les regarder à la main donc autant ne pas trop abuser sur le nombre d'images générées
+            if idx < max(5, len(val_loader)):  # on va les regarder à la main donc autant ne pas trop abuser sur le nombre d'images générées
                 # zebra and horses are of size (config.BATCH_SIZE, 3, 256, 256)
                 zebra = zebra.to(config.DEVICE)
                 horse = horse.to(config.DEVICE)
@@ -133,17 +133,19 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 
                 class_directory_path = f"saved_images/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
                 create_directory(class_directory_path)
-                first_directory_path = f"{class_directory_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
-                create_directory(first_directory_path)
-                second_directory_path = f"{first_directory_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
-                create_directory(second_directory_path)
-                third_directory_path = f"{second_directory_path}/{idx}"
-                create_directory(third_directory_path)
+                size_path = f"{class_directory_path}/{config.SIZE}"
+                create_directory(size_path)
+                first_hyperparameter_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
+                create_directory(first_hyperparameter_path)
+                second_hyperparameter_path = f"{first_hyperparameter_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
+                create_directory(second_hyperparameter_path)
+                validation_image_path = f"{second_hyperparameter_path}/{idx}"
+                create_directory(validation_image_path)
 
                 save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                           f"{third_directory_path}/{config.HORSES_CLASS}_epoch_{epoch}.png")
+                           f"{validation_image_path}/{config.HORSES_CLASS}_epoch_{epoch}.png")
                 save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                           f"{third_directory_path}/{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
+                           f"{validation_image_path}/{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
 
 
 
@@ -152,10 +154,12 @@ def main():
     # To save weights or load them
     weights_folder_classe = f"weights/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
     create_directory(weights_folder_classe)
-    weights_folder_classe_li = f"{weights_folder_classe}/li_{float(config.LAMBDA_IDENTITY)}"
-    create_directory(weights_folder_classe_li)
-    weights_folder_classe_li_osls = f"{weights_folder_classe_li}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
-    create_directory(weights_folder_classe_li_osls)
+    weights_folder_classe_size = f"{weights_folder_classe}/{config.SIZE}"
+    create_directory(weights_folder_classe_size)
+    weights_folder_classe_size_li = f"{weights_folder_classe_size}/li_{float(config.LAMBDA_IDENTITY)}"
+    create_directory(weights_folder_classe_size_li)
+    weights_folder_classe_size_li_osls = f"{weights_folder_classe_size_li}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
+    create_directory(weights_folder_classe_size_li_osls)
 
     disc_H = Discriminator(in_channels=3).to(config.DEVICE)
     disc_Z = Discriminator(in_channels=3).to(config.DEVICE)
@@ -180,19 +184,19 @@ def main():
     if config.LOAD_MODEL:
         try:
             load_checkpoint(
-                f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_GEN_H}", gen_H, opt_gen,
+                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_H}", gen_H, opt_gen,
                 change_current_epoch=True,
             )
             load_checkpoint(
-                f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_GEN_Z}", gen_Z, opt_gen,
+                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_Z}", gen_Z, opt_gen,
                 change_current_epoch=True,
             )
             load_checkpoint(
-                f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_CRITIC_H}", disc_H, opt_disc,
+                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_H}", disc_H, opt_disc,
                 change_current_epoch=True,
             )
             load_checkpoint(
-                f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_CRITIC_Z}", disc_Z, opt_disc,
+                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}", disc_Z, opt_disc,
                 change_current_epoch=True,
             )
             print("Loading previous model: success")
@@ -239,13 +243,13 @@ def main():
 
         if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + config.NUM_EPOCHS):
             save_checkpoint(gen_H, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_GEN_H}")
+                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_H}")
             save_checkpoint(gen_Z, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_GEN_Z}")
+                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_Z}")
             save_checkpoint(disc_H, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_CRITIC_H}")
+                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_H}")
             save_checkpoint(disc_Z, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
+                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
 
 
 if __name__ == "__main__":
