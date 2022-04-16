@@ -104,7 +104,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             if idx % 100 == 0 or idx == len(loader) - 1:
                 print(f"epoch {epoch} / {config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS}, batch {idx} / {len(loader)} "
                       f"H_real={H_reals/(idx+1):.2f} H_fake={H_fakes/(idx+1):.2f}, "
-                      f"lr_d = {opt_disc.param_groups[0]['lr']:.6f}, lr_g = {opt_gen.param_groups[0]['lr']:.6f}")
+                      f"lr_d = {opt_disc.param_groups[0]['lr']:.8f}, lr_g = {opt_gen.param_groups[0]['lr']:.6f}")
                 sys.stdout.flush()
 
         ### Fin du training de l'epoch, le dire au scheduler qui permet de decay le learning rate
