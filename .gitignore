@@ -17,6 +17,11 @@ reLabelling/CeterisParibusDataset
 reLabelling/CeterisParibusDatasetWithPts
 reLabelling/test
 
+submission.zip
+submission/
+video/
+continuousDeformations/CeterisParibusDataset/
+pres/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
