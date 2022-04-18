@@ -12,6 +12,9 @@ data/UTKface/cropped
 data/UTKface/cropped.zip
 data/UTKface/sex_subfolders
 data/UTKface/sex_subfolders.zip
+glassesNN/cycleGAN/saved_images/
+glassesNN/cycleGAN/data/
+
 
 reLabelling/CeterisParibusDataset
 reLabelling/CeterisParibusDatasetWithPts

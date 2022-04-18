@@ -18,12 +18,12 @@ module load anaconda3/2021.05/gcc-9.2.0
 source activate intercentrale2022
 
 # Array declaration, probably should be done more cleverly once I increase the number of combinations ...
-#lambda_identity=(0 0.5 1 0 0.5 1)
-#one_sided_label_smoothing=(0.1 0.1 0.1 0.1 0.1 0.1)
-#size=(512 512 512 1024 1024 1024)
 lambda_identity=(0 0.5 1 0 0.5 1)
 one_sided_label_smoothing=(0.1 0.1 0.1 0.1 0.1 0.1)
-size=(128 128 128 256 256 256)
+size=(512 512 512 1024 1024 1024)
+#lambda_identity=(0 0.5 1 0 0.5 1)
+#one_sided_label_smoothing=(0.1 0.1 0.1 0.1 0.1 0.1)
+#size=(128 128 128 256 256 256)
 
 # Prints
 echo This is task "$SLURM_ARRAY_TASK_ID"
