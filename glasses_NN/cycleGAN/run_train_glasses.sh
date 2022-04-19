@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=glasses_no_glasses
 #SBATCH --output=outs/%x.%j.txt
-#SBATCH --array=0-5
+#SBATCH --array=0-2
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=6
