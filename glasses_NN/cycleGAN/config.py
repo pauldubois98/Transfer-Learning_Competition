@@ -24,6 +24,7 @@ ONE_SIDED_LABEL_SMOOTHING = "argparse"
 HORSES_CLASS = "argparse"
 ZEBRAS_CLASS = "argparse"
 SIZE = "argparse"
+SKIP_CONNECTION = "argparse"
 
 transforms = None
 transforms_val_dataset = None

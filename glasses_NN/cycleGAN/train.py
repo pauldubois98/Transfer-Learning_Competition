@@ -254,10 +254,14 @@ def main():
 
 if __name__ == "__main__":
 
+    torch.autograd.set_detect_anomaly(True)
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument("lambda_identity")
     parser.add_argument("one_sided_label_smoothing")
+    parser.add_argument("skip_connection")  # can take values 0 (False), 1 (only first layer feeds last layer) or 2
+    # (every intermediaite layers during the downsampling process feed into the corresponding layers when upsampling)
     parser.add_argument("horses_class")
     parser.add_argument("zebras_class")
     parser.add_argument("size")
@@ -265,11 +269,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     config.LAMBDA_IDENTITY = float(args.lambda_identity)
-
     config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
+    config.SKIP_CONNECTION = int(args.skip_connection)
 
     config.HORSES_CLASS = args.horses_class
-
     config.ZEBRAS_CLASS = args.zebras_class
 
     config.SIZE = int(args.size)
