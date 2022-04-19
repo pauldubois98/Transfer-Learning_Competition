@@ -268,28 +268,26 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("lambda_identity")
-    parser.add_argument("one_sided_label_smoothing")
-    parser.add_argument("skip_connection")  # can take values 0 (False), 1 (only first layer feeds last layer) or 2
-    # (every intermediaite layers during the downsampling process feed into the corresponding layers when upsampling)
     parser.add_argument("horses_class")
     parser.add_argument("zebras_class")
+    parser.add_argument("skip_connection")  # can take values 0 (False), 1 (only first layer feeds last layer) or 2
+    # (every intermediaite layers during the downsampling process feed into the corresponding layers when upsampling)
     parser.add_argument("size")
+    parser.add_argument("lambda_identity")
+    parser.add_argument("one_sided_label_smoothing")
 
     args = parser.parse_args()
 
-    config.LAMBDA_IDENTITY = float(args.lambda_identity)
-    config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
-    config.SKIP_CONNECTION = int(args.skip_connection)
-
     config.HORSES_CLASS = args.horses_class
     config.ZEBRAS_CLASS = args.zebras_class
-
+    config.SKIP_CONNECTION = int(args.skip_connection)
     config.SIZE = int(args.size)
     if config.SIZE > 512:
         config.BATCH_SIZE = 1
     elif config.SIZE > 256:  # i.e. between 256 & 512 because of the elif clause
         config.BATCH_SIZE = 3
+    config.LAMBDA_IDENTITY = float(args.lambda_identity)
+    config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
 
     config.def_transforms()
 
