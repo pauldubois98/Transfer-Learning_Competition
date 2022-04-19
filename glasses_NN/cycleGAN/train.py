@@ -249,11 +249,14 @@ def main():
     d_scaler = torch.cuda.amp.GradScaler()
 
     print(f"Initialisation: {time.time() - start_time} s")
-    start_time = time.time()
 
     for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
+        start_time_local = time.time()
+
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                  opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch)
+
+        print(f"epoch {epoch} time: {time.time() - start_time_local} s")
 
         if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + config.NUM_EPOCHS):
             save_checkpoint(gen_H, opt_gen, epoch,
@@ -265,8 +268,7 @@ def main():
             save_checkpoint(disc_Z, opt_disc, epoch,
                             filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
 
-        print(f"epoch {epoch} time: {time.time() - start_time} s")
-        start_time = time.time()
+        print(f"saving + epoch {epoch} time: {time.time() - start_time_local} s")
 
 
 if __name__ == "__main__":
@@ -299,3 +301,5 @@ if __name__ == "__main__":
     config.def_transforms()
 
     main()
+
+    print(f"Total time {time.time() - start_time}")
