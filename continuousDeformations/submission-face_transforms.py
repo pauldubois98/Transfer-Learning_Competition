@@ -148,29 +148,12 @@ def change_skin_tone_image(image, target_skin_tone):
     return new_img
 
 
-def resize512(img):
-    s = max(img.shape[0:2])
-    new_img = np.zeros((s, s, 3), np.uint8)
-    ax, ay = (s - img.shape[1])//2, (s - img.shape[0])//2
-    new_img[ay:img.shape[0]+ay, ax:ax+img.shape[1]] = img
-    resized = cv2.resize(new_img, (512, 512), interpolation=cv2.INTER_AREA)
-    return resized
-
-
-def load_and_save(img_transfo, resize512=True):
-    if resize512:
-        def inner(src, dst, **kargs):
-            image = cv2.imread(src)
-            r_image = resize512(image)
-            new_image = img_transfo(r_image, **kargs)
-            cv2.imwrite(dst, new_image)
-        return inner
-    else:
-        def inner(src, dst):
-            image = cv2.imread(src)
-            new_image = img_transfo(image)
-            cv2.imwrite(dst, new_image)
-        return inner
+def load_and_save(img_transfo):
+    def inner(src, dst):
+        image = cv2.imread(src)
+        new_image = img_transfo(image)
+        cv2.imwrite(dst, new_image)
+    return inner
 
 
 def face_keypoints(image):
@@ -185,7 +168,10 @@ def face_keypoints(image):
 
 
 @load_and_save
-def bag_under_eyes(image, factor=150, mu=10):
+def bag_under_eyes(image):
+    # factors
+    f = 150
+    mu = 10
     # keypoints
     data = face_keypoints(image)
     eye_left_left = data[eye_left_left_pt, :2]
@@ -221,7 +207,7 @@ def bag_under_eyes(image, factor=150, mu=10):
     d_keys = np.vstack([d_under_eyes_right, d_under_eyes_left, d_under_eyes_right_bis,
                        d_under_eyes_left_bis, d_contour, d_added_contour, d_border])
     # image remap
-    d_keys_y = factor*d_keys[:, 1]
+    d_keys_y = f*d_keys[:, 1]
     dy = np.zeros((512, 512))
     dy[keys[:, 1], keys[:, 0]] = d_keys_y
     dy = gaussian_filter(dy, mu).astype(np.float32)*512
@@ -238,7 +224,7 @@ def bag_under_eyes(image, factor=150, mu=10):
 
 
 @load_and_save
-def pointy_nose(image, blur=15, factor=1):
+def pointy_nose(image):
     # keypoints
     data = face_keypoints(image)
     nose = data[nose_pts, :2]
@@ -250,22 +236,22 @@ def pointy_nose(image, blur=15, factor=1):
     d_keys = np.vstack([d_nose, d_not_nose, d_border])
     # image remap
     m = d_keys[:, 0] != 0
-    d_keys_x = d_keys[:, 0].copy()*factor
-    d_keys_x[m] /= np.abs(d_keys[m, 0])**0.25
+    d_keys_x = d_keys[:, 0].copy()
+    d_keys_x[m] /= np.abs(d_keys[m, 0])**0.1
     dx = griddata((keys[:, 1], keys[:, 0]), d_keys_x, (Y, X))
-    dx = gaussian_filter(dx, blur).astype(np.float32)
+    dx = gaussian_filter(dx, 10).astype(np.float32)
     m = d_keys[:, 1] != 0
-    d_keys_y = d_keys[:, 1].copy()*factor
-    d_keys_y[m] /= np.abs(d_keys[m, 1])**0.5
+    d_keys_y = d_keys[:, 1].copy()
+    d_keys_y[m] /= np.sqrt(np.abs(d_keys[m, 1]))
     dy = griddata((keys[:, 1], keys[:, 0]), d_keys_y, (Y, X))
-    dy = gaussian_filter(dy, blur).astype(np.float32)
+    dy = gaussian_filter(dy, 10).astype(np.float32)
     new_img = cv2.remap(image, X+dx, Y-dy, cv2.INTER_LINEAR,
                         cv2.BORDER_REPLICATE)
     return new_img
 
 
 @load_and_save
-def flat_nose(image, blur=15, factor=1):
+def flat_nose(image):
     # keypoints
     data = face_keypoints(image)
     nose = data[nose_pts, :2]
@@ -277,22 +263,22 @@ def flat_nose(image, blur=15, factor=1):
     d_keys = np.vstack([d_nose, d_not_nose, d_border])
     # image remap
     m = d_keys[:, 0] != 0
-    d_keys_x = d_keys[:, 0].copy()*factor
-    d_keys_x[m] /= np.abs(d_keys[m, 0])**0.25
+    d_keys_x = d_keys[:, 0].copy()
+    d_keys_x[m] /= np.abs(d_keys[m, 0])**0.1
     dx = griddata((keys[:, 1], keys[:, 0]), d_keys_x, (Y, X))
-    dx = gaussian_filter(dx, blur).astype(np.float32)
+    dx = gaussian_filter(dx, 10).astype(np.float32)
     m = d_keys[:, 1] != 0
-    d_keys_y = d_keys[:, 1].copy()*factor
-    d_keys_y[m] /= np.abs(d_keys[m, 1])**0.5
+    d_keys_y = d_keys[:, 1].copy()
+    d_keys_y[m] /= np.sqrt(np.abs(d_keys[m, 1]))
     dy = griddata((keys[:, 1], keys[:, 0]), d_keys_y, (Y, X))
-    dy = gaussian_filter(dy, blur).astype(np.float32)
+    dy = gaussian_filter(dy, 10).astype(np.float32)
     new_img = cv2.remap(image, X-dx, Y+dy, cv2.INTER_LINEAR,
                         cv2.BORDER_REPLICATE)
     return new_img
 
 
 @load_and_save
-def small_nose(image, blur=15, factor=1):
+def small_nose(image):
     # keypoints
     data = face_keypoints(image)
     nose = data[nose_pts, :2]
@@ -304,22 +290,22 @@ def small_nose(image, blur=15, factor=1):
     d_keys = np.vstack([d_nose, d_not_nose, d_border])
     # image remap
     m = d_keys[:, 0] != 0
-    d_keys_x = d_keys[:, 0].copy()*factor
+    d_keys_x = d_keys[:, 0].copy()
     d_keys_x[m] /= np.abs(d_keys[m, 0])**0.25
     dx = griddata((keys[:, 1], keys[:, 0]), d_keys_x, (Y, X))
-    dx = gaussian_filter(dx, blur).astype(np.float32)
+    dx = gaussian_filter(dx, 10).astype(np.float32)
     m = d_keys[:, 1] != 0
-    d_keys_y = d_keys[:, 1].copy()*factor
-    d_keys_y[m] /= np.abs(d_keys[m, 1])**0.5
+    d_keys_y = d_keys[:, 1].copy()
+    d_keys_y[m] /= np.sqrt(np.abs(d_keys[m, 1]))
     dy = griddata((keys[:, 1], keys[:, 0]), d_keys_y, (Y, X))
-    dy = gaussian_filter(dy, blur).astype(np.float32)
+    dy = gaussian_filter(dy, 10).astype(np.float32)
     new_img = cv2.remap(image, X+dx, Y+dy, cv2.INTER_LINEAR,
                         cv2.BORDER_REPLICATE)
     return new_img
 
 
 @load_and_save
-def big_nose(image, blur=15, factor=1):
+def big_nose(image):
     # keypoints
     data = face_keypoints(image)
     nose = data[nose_pts, :2]
@@ -332,22 +318,24 @@ def big_nose(image, blur=15, factor=1):
     d_keys = np.vstack([d_nose, d_not_nose, d_border])
     # image remap
     m = d_keys[:, 0] != 0
-    d_keys_x = d_keys[:, 0].copy()*factor
+    d_keys_x = d_keys[:, 0].copy()
     d_keys_x[m] /= np.abs(d_keys[m, 0])**0.25
     dx = griddata((keys[:, 1], keys[:, 0]), d_keys_x, (Y, X))
-    dx = gaussian_filter(dx, blur).astype(np.float32)
+    dx = gaussian_filter(dx, 10).astype(np.float32)
     m = d_keys[:, 1] != 0
-    d_keys_y = d_keys[:, 1].copy()*factor
-    d_keys_y[m] /= np.abs(d_keys[m, 1])**0.5
+    d_keys_y = d_keys[:, 1].copy()
+    d_keys_y[m] /= np.sqrt(np.abs(d_keys[m, 1]))
     dy = griddata((keys[:, 1], keys[:, 0]), d_keys_y, (Y, X))
-    dy = gaussian_filter(dy, blur).astype(np.float32)
+    dy = gaussian_filter(dy, 10).astype(np.float32)
     new_img = cv2.remap(image, X-dx, Y-dy, cv2.INTER_LINEAR,
                         cv2.BORDER_REPLICATE)
     return new_img
 
 
 @load_and_save
-def big_lips(image, blur=5, factor=1.1):
+def big_lips(image):
+    # factor
+    f = 1.1
     # keypoints
     data = face_keypoints(image)
     inner_lips = data[inner_lips_pts, :2]
@@ -362,19 +350,21 @@ def big_lips(image, blur=5, factor=1.1):
             not_lips, border])*512).astype(np.int32)
     d_keys = np.vstack([d_inner_lips, d_outer_lips, d_not_lips, d_border])
     # image remap
-    d_keys_x = factor*d_keys[:, 0]
+    d_keys_x = f*d_keys[:, 0]
     dx = griddata((keys[:, 1], keys[:, 0]), d_keys_x, (Y, X))
-    dx = gaussian_filter(dx, blur).astype(np.float32)
-    d_keys_y = factor*d_keys[:, 1]
+    dx = gaussian_filter(dx, 10).astype(np.float32)
+    d_keys_y = f*d_keys[:, 1]
     dy = griddata((keys[:, 1], keys[:, 0]), d_keys_y, (Y, X))
-    dy = gaussian_filter(dy, blur).astype(np.float32)
+    dy = gaussian_filter(dy, 10).astype(np.float32)
     new_img = cv2.remap(image, X+dx, Y+dy, cv2.INTER_LINEAR,
                         cv2.BORDER_REPLICATE)
     return new_img
 
 
 @load_and_save
-def small_lips(image, blur=5, factor=1.5):
+def small_lips(image):
+    # factor
+    f = 1.5
     # keypoints
     data = face_keypoints(image)
     inner_lips = data[inner_lips_pts, :2]
@@ -389,19 +379,22 @@ def small_lips(image, blur=5, factor=1.5):
             not_lips, border])*512).astype(np.int32)
     d_keys = np.vstack([d_inner_lips, d_outer_lips, d_not_lips, d_border])
     # image remap
-    d_keys_x = factor*d_keys[:, 0]
+    d_keys_x = f*d_keys[:, 0]
     dx = griddata((keys[:, 1], keys[:, 0]), d_keys_x, (Y, X))
-    dx = gaussian_filter(dx, blur).astype(np.float32)
-    d_keys_y = factor*d_keys[:, 1]
+    dx = gaussian_filter(dx, 10).astype(np.float32)
+    d_keys_y = f*d_keys[:, 1]
     dy = griddata((keys[:, 1], keys[:, 0]), d_keys_y, (Y, X))
-    dy = gaussian_filter(dy, blur).astype(np.float32)
+    dy = gaussian_filter(dy, 10).astype(np.float32)
     new_img = cv2.remap(image, X-dx, Y-dy, cv2.INTER_LINEAR,
                         cv2.BORDER_REPLICATE)
     return new_img
 
 
 @load_and_save
-def narrow_eyes(image, mu=30, factor=5):
+def narrow_eyes(image):
+    # factors
+    f = 5
+    mu = 30
     # keypoints
     data = face_keypoints(image)
     eye_left_left = data[eye_left_left_pt, :2]
@@ -440,11 +433,11 @@ def narrow_eyes(image, mu=30, factor=5):
             * 511).astype(np.int32)
     d_keys = np.vstack([d_k, d_contour, d_added_contour, d_border])
     # image remap
-    d_keys_x = factor*d_keys[:, 0]
+    d_keys_x = f*d_keys[:, 0]
     dx = np.zeros((nx, ny))
     dx[keys[:, 1], keys[:, 0]] = d_keys_x
     dx = gaussian_filter(dx, mu).astype(np.float32)*512
-    d_keys_y = factor*d_keys[:, 1]
+    d_keys_y = f*d_keys[:, 1]
     dy = np.zeros((nx, ny))
     dy[keys[:, 1], keys[:, 0]] = d_keys_y
     dy = gaussian_filter(dy, mu).astype(np.float32)*512
@@ -454,7 +447,10 @@ def narrow_eyes(image, mu=30, factor=5):
 
 
 @load_and_save
-def round_eyes(image, mu=30, factor=5):
+def round_eyes(image):
+    # factors
+    f = 5
+    mu = 30
     # keypoints
     data = face_keypoints(image)
     eye_left_left = data[eye_left_left_pt, :2]
@@ -493,11 +489,11 @@ def round_eyes(image, mu=30, factor=5):
             * 511).astype(np.int32)
     d_keys = np.vstack([d_k, d_contour, d_added_contour, d_border])
     # image remap
-    d_keys_x = factor*d_keys[:, 0]
+    d_keys_x = f*d_keys[:, 0]
     dx = np.zeros((nx, ny))
     dx[keys[:, 1], keys[:, 0]] = d_keys_x
     dx = gaussian_filter(dx, mu).astype(np.float32)*512
-    d_keys_y = factor*d_keys[:, 1]
+    d_keys_y = f*d_keys[:, 1]
     dy = np.zeros((nx, ny))
     dy[keys[:, 1], keys[:, 0]] = d_keys_y
     dy = gaussian_filter(dy, mu).astype(np.float32)*512
@@ -512,3 +508,4 @@ if __name__ == '__main__':
     # pointy_nose(filename_in, filename_out)
     # bag_under_eyes(filename_in, filename_out)
     change_skin_tone(filename_in, filename_out, 1)
+    
