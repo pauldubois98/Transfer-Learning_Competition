@@ -4,6 +4,7 @@ import sys
 import torch.nn as nn
 import torch.optim as optim
 import argparse
+import time
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
@@ -133,13 +134,15 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 
                 class_directory_path = f"saved_images/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
                 create_directory(class_directory_path)
-                size_path = f"{class_directory_path}/{config.SIZE}"
+                skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
+                create_directory(skip_connection_path)
+                size_path = f"{skip_connection_path}/{config.SIZE}"
                 create_directory(size_path)
-                first_hyperparameter_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
-                create_directory(first_hyperparameter_path)
-                second_hyperparameter_path = f"{first_hyperparameter_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
-                create_directory(second_hyperparameter_path)
-                validation_image_path = f"{second_hyperparameter_path}/{idx}"
+                l_identity_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
+                create_directory(l_identity_path)
+                osls_path = f"{l_identity_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
+                create_directory(osls_path)
+                validation_image_path = f"{osls_path}/{idx}"
                 create_directory(validation_image_path)
 
                 save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
@@ -154,12 +157,20 @@ def main():
     # To save weights or load them
     weights_folder_classe = f"weights/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
     create_directory(weights_folder_classe)
-    weights_folder_classe_size = f"{weights_folder_classe}/{config.SIZE}"
-    create_directory(weights_folder_classe_size)
-    weights_folder_classe_size_li = f"{weights_folder_classe_size}/li_{float(config.LAMBDA_IDENTITY)}"
-    create_directory(weights_folder_classe_size_li)
-    weights_folder_classe_size_li_osls = f"{weights_folder_classe_size_li}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
-    create_directory(weights_folder_classe_size_li_osls)
+
+    weights_folder_classe_skipconnections = f"{weights_folder_classe}/skip_{config.SKIP_CONNECTION}"
+    create_directory(weights_folder_classe_skipconnections)
+
+    weights_folder_classe_skipconnections_size = f"{weights_folder_classe_skipconnections}/{config.SIZE}"
+    create_directory(weights_folder_classe_skipconnections_size)
+
+    weights_folder_classe_skipconnections_size_li = f"{weights_folder_classe_skipconnections_size}/" \
+                                                    f"li_{float(config.LAMBDA_IDENTITY)}"
+    create_directory(weights_folder_classe_skipconnections_size_li)
+
+    weights_folder_classe_skipconnections_size_li_osls = f"{weights_folder_classe_skipconnections_size_li}/" \
+                                                         f"osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
+    create_directory(weights_folder_classe_skipconnections_size_li_osls)
 
     disc_H = Discriminator(in_channels=3).to(config.DEVICE)
     disc_Z = Discriminator(in_channels=3).to(config.DEVICE)
@@ -184,19 +195,19 @@ def main():
     if config.LOAD_MODEL:
         try:
             load_checkpoint(
-                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_H}", gen_H, opt_gen,
+                f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_H}", gen_H, opt_gen,
                 change_current_epoch=True,
             )
             load_checkpoint(
-                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_Z}", gen_Z, opt_gen,
+                f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_Z}", gen_Z, opt_gen,
                 change_current_epoch=True,
             )
             load_checkpoint(
-                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_H}", disc_H, opt_disc,
+                f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_H}", disc_H, opt_disc,
                 change_current_epoch=True,
             )
             load_checkpoint(
-                f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}", disc_Z, opt_disc,
+                f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}", disc_Z, opt_disc,
                 change_current_epoch=True,
             )
             print("Loading previous model: success")
@@ -237,47 +248,58 @@ def main():
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
 
+    print(f"Initialisation: {time.time() - start_time} s")
+
     for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
+        start_time_local = time.time()
+
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                  opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch)
 
+        print(f"epoch {epoch} time: {time.time() - start_time_local} s")
+
         if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + config.NUM_EPOCHS):
             save_checkpoint(gen_H, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_H}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_H}")
             save_checkpoint(gen_Z, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_GEN_Z}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_Z}")
             save_checkpoint(disc_H, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_H}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_H}")
             save_checkpoint(disc_Z, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
+
+        print(f"saving + epoch {epoch} time: {time.time() - start_time_local} s")
 
 
 if __name__ == "__main__":
 
+    start_time = time.time()
+
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("lambda_identity")
-    parser.add_argument("one_sided_label_smoothing")
     parser.add_argument("horses_class")
     parser.add_argument("zebras_class")
+    parser.add_argument("skip_connection")  # can take values 0 (False), 1 (only first layer feeds last layer) or 2
+    # (every intermediaite layers during the downsampling process feed into the corresponding layers when upsampling)
     parser.add_argument("size")
+    parser.add_argument("lambda_identity")
+    parser.add_argument("one_sided_label_smoothing")
 
     args = parser.parse_args()
 
-    config.LAMBDA_IDENTITY = float(args.lambda_identity)
-
-    config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
-
     config.HORSES_CLASS = args.horses_class
-
     config.ZEBRAS_CLASS = args.zebras_class
-
+    config.SKIP_CONNECTION = int(args.skip_connection)
     config.SIZE = int(args.size)
     if config.SIZE > 512:
         config.BATCH_SIZE = 1
     elif config.SIZE > 256:  # i.e. between 256 & 512 because of the elif clause
         config.BATCH_SIZE = 3
+    config.LAMBDA_IDENTITY = float(args.lambda_identity)
+    config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
 
     config.def_transforms()
 
     main()
+
+    print(f"Total time {time.time() - start_time}")

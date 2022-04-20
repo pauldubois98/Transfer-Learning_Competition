@@ -13,6 +13,7 @@ data/UTKface/cropped.zip
 data/UTKface/sex_subfolders
 data/UTKface/sex_subfolders.zip
 
+
 reLabelling/CeterisParibusDataset
 reLabelling/CeterisParibusDatasetWithPts
 reLabelling/test
@@ -152,3 +153,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Romain
+/glasses_NN/cycleGAN/saved_images/glasses_no_glasses/
+/glasses_NN/cycleGAN/data/data/
+/glasses_NN/classifier/.idea/
+/glasses_NN/cycleGAN/.idea/
+/glasses_NN/cycleGAN/archive/
+/.idea/
