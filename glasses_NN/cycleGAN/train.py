@@ -13,6 +13,7 @@ from dataset import HorseZebraDataset
 from utils import save_checkpoint, load_checkpoint, create_directory
 from discriminator_model import Discriminator
 from generator_model import Generator
+from logger import logger
 
 
 def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
@@ -124,7 +125,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
         gen_Z.eval()
         gen_H.eval()
         for idx, (zebra, horse) in enumerate(val_loader):
-            if idx < max(5, len(val_loader)):  # c'est sur ces images que FID va être calculé
+            if idx < max(2048, len(val_loader)):  # c'est sur ces images que FID va être calculé
                 # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
                 zebra = zebra.to(config.DEVICE)
                 horse = horse.to(config.DEVICE)
@@ -134,14 +135,19 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 
                 class_directory_path = f"saved_images/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
                 create_directory(class_directory_path)
+
                 skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
                 create_directory(skip_connection_path)
+
                 size_path = f"{skip_connection_path}/{config.SIZE}"
                 create_directory(size_path)
+
                 l_identity_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
                 create_directory(l_identity_path)
+
                 osls_path = f"{l_identity_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
                 create_directory(osls_path)
+
                 validation_image_path = f"{osls_path}/{idx}"
                 create_directory(validation_image_path)
 
@@ -257,7 +263,12 @@ def main():
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
 
-    print(f"Initialisation: {time.time() - start_time} s")
+    logger(
+        f"Initialisation: {time.time() - start_time} s",
+        True,
+        str(time.time() - start_time),
+        "initialisation_time"
+    )
 
     for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
         start_time_local = time.time()
@@ -265,7 +276,12 @@ def main():
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                  opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch)
 
-        print(f"epoch {epoch} time: {time.time() - start_time_local} s")
+        logger(
+            f"epoch {epoch} time: {time.time() - start_time_local} s",
+            True,
+            str(time.time() - start_time),
+            "epochs_time"
+        )
 
         if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + config.NUM_EPOCHS):
             save_checkpoint(gen_H, opt_gen, epoch,
@@ -313,4 +329,9 @@ if __name__ == "__main__":
 
     main()
 
-    print(f"Total time {time.time() - start_time}")
+    logger(
+        f"Total time {time.time() - start_time}",
+        True,
+        str(time.time() - start_time),
+        "total_time"
+    )
