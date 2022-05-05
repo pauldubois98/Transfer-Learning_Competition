@@ -34,7 +34,7 @@ def def_transforms():
     global transforms_val_dataset
     transforms = A.Compose(
         [
-            A.Resize(width=SIZE, height=SIZE),
+            A.Resize(width=SIZE, height=SIZE),  # noqa
             A.HorizontalFlip(p=0.5),
             A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255),
             ToTensorV2(),
@@ -47,7 +47,7 @@ def def_transforms():
 
     transforms_val_dataset = A.Compose(
         [
-            A.Resize(width=SIZE, height=SIZE),
+            A.Resize(width=SIZE, height=SIZE),  # noqa
             A.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5], max_pixel_value=255),
             ToTensorV2(),
          ],
