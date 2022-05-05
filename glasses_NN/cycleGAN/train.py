@@ -133,7 +133,8 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                 fake_horse = gen_H(zebra)
                 fake_zebra = gen_Z(horse)
 
-                class_directory_path = f"saved_images/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
+                class_directory_path = f"saved_images_{config.REPETITION_NUMBER}/" \
+                                       f"{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
                 create_directory(class_directory_path)
 
                 skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
@@ -170,7 +171,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 def main():
 
     # To save weights or load them
-    weights_folder_classe = f"weights/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
+    weights_folder_classe = f"weights_{config.REPETITION_NUMBER}/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
     create_directory(weights_folder_classe)
 
     weights_folder_classe_skipconnections = f"{weights_folder_classe}/skip_{config.SKIP_CONNECTION}"

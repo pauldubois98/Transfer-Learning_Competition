@@ -12,7 +12,7 @@ def logger(message: str, stored: bool, to_store: str, output: str) -> None:
     """
     print(message)
     if stored:
-        outs_folder_classe = f"outs/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
+        outs_folder_classe = f"outs_{config.REPETITION_NUMBER}/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
         create_directory(outs_folder_classe)
 
         outs_folder_classe_skipconnections = f"{outs_folder_classe}/skip_{config.SKIP_CONNECTION}"

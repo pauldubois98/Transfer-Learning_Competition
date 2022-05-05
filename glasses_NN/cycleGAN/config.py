@@ -26,6 +26,7 @@ HORSES_CLASS = "argparse"
 ZEBRAS_CLASS = "argparse"
 SIZE = "argparse"
 SKIP_CONNECTION = "argparse"
+REPETITION_NUMBER = "argparse"
 
 transforms = None
 transforms_val_dataset = None
