@@ -29,4 +29,4 @@ def logger(message: str, stored: bool, to_store: str, output: str) -> None:
                                                           f"osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
         create_directory(outs_folder_classe_skipconnections_size_li_osls)
         with open(f'{outs_folder_classe_skipconnections_size_li_osls}/{output}.txt', 'a+') as f:
-            f.write(to_store)
+            f.write(to_store + "\n")

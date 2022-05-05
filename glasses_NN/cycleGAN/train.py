@@ -312,6 +312,7 @@ if __name__ == "__main__":
     parser.add_argument("size")
     parser.add_argument("lambda_identity")
     parser.add_argument("one_sided_label_smoothing")
+    parser.add_argument("repetition_number")
 
     args = parser.parse_args()
 
@@ -325,6 +326,7 @@ if __name__ == "__main__":
         config.BATCH_SIZE = 3
     config.LAMBDA_IDENTITY = float(args.lambda_identity)
     config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
+    config.REPETITION_NUMBER = args.repetition_number
 
     config.def_transforms()
 

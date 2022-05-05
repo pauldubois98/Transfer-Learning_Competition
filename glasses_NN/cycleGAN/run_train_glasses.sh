@@ -22,6 +22,7 @@ skip_connections=(0 1 2)
 size=(128 128 128)
 lambda_identity=(1 1 1)
 one_sided_label_smoothing=(0.1 0.1 0.1)
+repetition_number=(0 1 0 1 0 1 0 1)
 
 
 # Prints
@@ -32,4 +33,4 @@ echo lambda_identity = "${lambda_identity[$SLURM_ARRAY_TASK_ID]}"
 echo one_sided_label_smoothing = "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
 
 # Run python script
-python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
+python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" "${repetition_number[$SLURM_ARRAY_TASK_ID]}"

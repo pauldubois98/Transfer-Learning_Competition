@@ -19,11 +19,14 @@ reLabelling/test
 
 
 # Romain stuff
-/glasses_NN/cycleGAN/saved_images/
 /glasses_NN/cycleGAN/data
 /glasses_NN/cycleGAN/archive/
-/glasses_NN/cycleGAN/outs/
-/glasses_NN/cycleGAN/weights/
+/glasses_NN/cycleGAN/saved_images_0/
+/glasses_NN/cycleGAN/weights_0/
+/glasses_NN/cycleGAN/outs_0/
+/glasses_NN/cycleGAN/saved_images_1/
+/glasses_NN/cycleGAN/weights_1/
+/glasses_NN/cycleGAN/outs_1/
 
 
 # IDE stuff
