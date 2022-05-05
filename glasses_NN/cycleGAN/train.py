@@ -105,7 +105,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             if idx % 100 == 0 or idx == len(loader) - 1:
                 print(f"epoch {epoch} / {config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS}, batch {idx} / {len(loader)} "
                       f"H_real={H_reals/(idx+1):.2f} H_fake={H_fakes/(idx+1):.2f}, "
-                      f"lr_d = {opt_disc.param_groups[0]['lr']:.8f}, lr_g = {opt_gen.param_groups[0]['lr']:.6f}")
+                      f"lr_d = {opt_disc.param_groups[0]['lr']:.8f}, lr_g = {opt_gen.param_groups[0]['lr']:.8f}")
                 sys.stdout.flush()
 
         ### Fin du training de l'epoch, le dire au scheduler qui permet de decay le learning rate
@@ -214,7 +214,7 @@ def main():
             print(f"Last epoch: {config.CURRENT_EPOCH}")
         except Exception as e:
             print(e)
-            print("Couldn't load previous model")
+            print("Couldn't load previous model (exception printed above)")
 
     scheduler_disc = optim.lr_scheduler.StepLR(opt_disc, step_size=100, gamma=0.1)
     scheduler_gen = optim.lr_scheduler.StepLR(opt_gen, step_size=100, gamma=0.1)
@@ -272,7 +272,9 @@ def main():
 
 
 if __name__ == "__main__":
-
+    """
+    /!\ if rootdirectory isn't cycleGAN/, then it won't work /!\ 
+    """
     start_time = time.time()
 
     parser = argparse.ArgumentParser()
