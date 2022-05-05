@@ -18,6 +18,7 @@ CHECKPOINT_GEN_H = "genh.pth.tar"
 CHECKPOINT_GEN_Z = "genz.pth.tar"
 CHECKPOINT_CRITIC_H = "critich.pth.tar"
 CHECKPOINT_CRITIC_Z = "criticz.pth.tar"
+VAL_IMAGES_FORMAT = "only_gen"  # can be "both" (to look at them) or "only_gen" (to calculate a FID)
 
 LAMBDA_IDENTITY = "argparse"
 ONE_SIDED_LABEL_SMOOTHING = "argparse"

@@ -124,8 +124,8 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
         gen_Z.eval()
         gen_H.eval()
         for idx, (zebra, horse) in enumerate(val_loader):
-            if idx < max(5, len(val_loader)):  # on va les regarder à la main donc autant ne pas trop abuser sur le nombre d'images générées
-                # zebra and horses are of size (config.BATCH_SIZE, 3, 256, 256)
+            if idx < max(5, len(val_loader)):  # c'est sur ces images que FID va être calculé
+                # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
                 zebra = zebra.to(config.DEVICE)
                 horse = horse.to(config.DEVICE)
 
@@ -145,11 +145,16 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                 validation_image_path = f"{osls_path}/{idx}"
                 create_directory(validation_image_path)
 
-                save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                           f"{validation_image_path}/{config.HORSES_CLASS}_epoch_{epoch}.png")
-                save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                           f"{validation_image_path}/{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
-
+                if config.VAL_IMAGES_FORMAT == "both":
+                    save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
+                               f"{validation_image_path}/had_{config.HORSES_CLASS}_epoch_{epoch}.png")
+                    save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
+                               f"{validation_image_path}/had_{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
+                elif config.VAL_IMAGES_FORMAT == "only_gen":
+                    save_image(fake_zebra * 0.5 + 0.5,
+                               f"{validation_image_path}/had_{config.HORSES_CLASS}_epoch_{epoch}.png")
+                    save_image(fake_horse * 0.5 + 0.5,
+                               f"{validation_image_path}/had_{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
 
 
 def main():
