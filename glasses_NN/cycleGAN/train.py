@@ -155,6 +155,10 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                                f"{validation_image_path}/had_{config.HORSES_CLASS}_epoch_{epoch}.png")
                     save_image(fake_horse * 0.5 + 0.5,
                                f"{validation_image_path}/had_{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
+                else:
+                    print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
+                          f"was set to {config.VAL_IMAGES_FORMAT}")
+                    exit()
 
 
 def main():
