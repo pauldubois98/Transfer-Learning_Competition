@@ -14,6 +14,7 @@ NUM_EPOCHS = 300
 LOAD_MODEL = True
 SAVE_MODEL = False
 ONLY_GENERATE = False
+# To-do, properly code ONLY_GENERATE if statements cuz rn we still sorta have to run through epochs
 CHECKPOINT_GEN_H = "genh.pth.tar"
 CHECKPOINT_GEN_Z = "genz.pth.tar"
 CHECKPOINT_CRITIC_H = "critich.pth.tar"

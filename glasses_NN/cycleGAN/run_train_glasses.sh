@@ -33,11 +33,11 @@ do
 			do
 				for repetition_number_val in 0 1
 				do
-					skip_connections+=(skip_connections_val)
-					size+=(size_val)
-					lambda_identity+=(lambda_identity_val)
-					one_sided_label_smoothing+=(one_sided_label_smoothing_val)
-					repetition_number+=(repetition_number_val)
+					skip_connections+=($skip_connections_val)
+					size+=($size_val)
+					lambda_identity+=($lambda_identity_val)
+					one_sided_label_smoothing+=($one_sided_label_smoothing_val)
+					repetition_number+=($repetition_number_val)
 				done
 			done
 		done

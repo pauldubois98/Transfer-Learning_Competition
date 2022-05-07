@@ -17,7 +17,8 @@ from logger import logger
 
 
 def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
-             opt_disc, opt_gen, scheduler_disc, scheduler_gen, l1, mse, d_scaler, g_scaler, epoch):
+             opt_disc, opt_gen, scheduler_disc, scheduler_gen, l1, mse, d_scaler, g_scaler, epoch,
+             save_val_images_transformed=False):
     H_reals = 0
     H_fakes = 0
 
@@ -119,53 +120,56 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             scheduler_gen.step()
 
     # EVAL
-    with torch.no_grad():
-        disc_H.eval()
-        disc_Z.eval()
-        gen_Z.eval()
-        gen_H.eval()
-        for idx, (zebra, horse) in enumerate(val_loader):
-            if idx < max(2048, len(val_loader)):  # c'est sur ces images que FID va être calculé
-                # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
-                zebra = zebra.to(config.DEVICE)
-                horse = horse.to(config.DEVICE)
+    if save_val_images_transformed:
+        with torch.no_grad():
+            disc_H.eval()
+            disc_Z.eval()
+            gen_Z.eval()
+            gen_H.eval()
+            for idx, (zebra, horse) in enumerate(val_loader):
+                if idx < max(2048, len(val_loader)):  # c'est sur ces images que FID va être calculé
+                    # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
+                    zebra = zebra.to(config.DEVICE)
+                    horse = horse.to(config.DEVICE)
 
-                fake_horse = gen_H(zebra)
-                fake_zebra = gen_Z(horse)
+                    fake_horse = gen_H(zebra)
+                    fake_zebra = gen_Z(horse)
 
-                class_directory_path = f"saved_images_{config.REPETITION_NUMBER}/" \
-                                       f"{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
-                create_directory(class_directory_path)
+                    class_directory_path = f"saved_images_{config.REPETITION_NUMBER}/" \
+                                           f"{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
+                    create_directory(class_directory_path)
 
-                skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
-                create_directory(skip_connection_path)
+                    skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
+                    create_directory(skip_connection_path)
 
-                size_path = f"{skip_connection_path}/{config.SIZE}"
-                create_directory(size_path)
+                    size_path = f"{skip_connection_path}/{config.SIZE}"
+                    create_directory(size_path)
 
-                l_identity_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
-                create_directory(l_identity_path)
+                    l_identity_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
+                    create_directory(l_identity_path)
 
-                osls_path = f"{l_identity_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
-                create_directory(osls_path)
+                    osls_path = f"{l_identity_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
+                    create_directory(osls_path)
 
-                validation_image_path = f"{osls_path}/{idx}"
-                create_directory(validation_image_path)
+                    category_path_horses = f"{osls_path}/was_{config.HORSES_CLASS}"
+                    create_directory(category_path_horses)
+                    category_path_zebras = f"{osls_path}/was_{config.ZEBRAS_CLASS}"
+                    create_directory(osls_path)
 
-                if config.VAL_IMAGES_FORMAT == "both":
-                    save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                               f"{validation_image_path}/had_{config.HORSES_CLASS}_epoch_{epoch}.png")
-                    save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                               f"{validation_image_path}/had_{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
-                elif config.VAL_IMAGES_FORMAT == "only_gen":
-                    save_image(fake_zebra * 0.5 + 0.5,
-                               f"{validation_image_path}/had_{config.HORSES_CLASS}_epoch_{epoch}.png")
-                    save_image(fake_horse * 0.5 + 0.5,
-                               f"{validation_image_path}/had_{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
-                else:
-                    print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
-                          f"was set to {config.VAL_IMAGES_FORMAT}")
-                    exit()
+                    if config.VAL_IMAGES_FORMAT == "both":
+                        save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
+                                   f"{category_path_horses}/{idx}_epoch_{epoch}.png")
+                        save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
+                                   f"{category_path_zebras}/{idx}_epoch_{epoch}.png")
+                    elif config.VAL_IMAGES_FORMAT == "only_gen":
+                        save_image(fake_zebra * 0.5 + 0.5,
+                                   f"{category_path_horses}/{idx}_epoch_{epoch}.png")
+                        save_image(fake_horse * 0.5 + 0.5,
+                                   f"{category_path_zebras}/{idx}_epoch_{epoch}.png")
+                    else:
+                        print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
+                              f"was set to {config.VAL_IMAGES_FORMAT}")
+                        exit()
 
 
 def main():
@@ -275,7 +279,8 @@ def main():
         start_time_local = time.time()
 
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
-                 opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch)
+                 opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch,
+                 save_val_images_transformed=(epoch%100==1))
 
         logger(
             f"epoch {epoch} time: {time.time() - start_time_local} s",
