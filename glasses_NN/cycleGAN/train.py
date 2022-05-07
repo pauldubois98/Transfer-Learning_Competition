@@ -18,7 +18,7 @@ from logger import logger
 
 def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
              opt_disc, opt_gen, scheduler_disc, scheduler_gen, l1, mse, d_scaler, g_scaler, epoch,
-             save_val_images_transformed=False):
+             save_val_images_transformed: bool = False):
     H_reals = 0
     H_fakes = 0
 
@@ -154,7 +154,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                     category_path_horses = f"{osls_path}/was_{config.HORSES_CLASS}"
                     create_directory(category_path_horses)
                     category_path_zebras = f"{osls_path}/was_{config.ZEBRAS_CLASS}"
-                    create_directory(osls_path)
+                    create_directory(category_path_zebras)
 
                     if config.VAL_IMAGES_FORMAT == "both":
                         save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
