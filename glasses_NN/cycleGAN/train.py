@@ -128,6 +128,11 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             gen_H.eval()
             for idx, (zebra, horse, zebra_name, horse_name) in enumerate(val_loader):
                 if idx < max(2048, len(val_loader)):  # c'est sur ces images que FID va être calculé
+                    # because enumerate(val_loader) spits stuff batch by batch, zebra_name is not a string but a list
+                    # of one (because we set batch_size = 1 for the val_loader) string.
+                    zebra_name = zebra_name[0]
+                    horse_name = horse_name[0]
+
                     # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
                     zebra = zebra.to(config.DEVICE)
                     horse = horse.to(config.DEVICE)
