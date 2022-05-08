@@ -275,7 +275,10 @@ def main():
         "initialisation_time"
     )
 
-    for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
+    for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS + 1):
+        # On commence à config.CURRENT_EPOCH + 1, et on en fait config.NUM_EPOCHS. Du coup on va jusqu'à
+        # config.CURENT_EPOCH + 1 + config.NUM_EPOCHS inclus du coup on va jusqu'à
+        # config.CURENT_EPOCH + 1 + config.NUM_EPOCHS + 1 exclus
         start_time_local = time.time()
 
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
@@ -289,15 +292,19 @@ def main():
             "epochs_time"
         )
 
-        if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + config.NUM_EPOCHS):
+        if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
             save_checkpoint(gen_H, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_H}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_GEN_H}")
             save_checkpoint(gen_Z, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_Z}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_GEN_Z}")
             save_checkpoint(disc_H, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_H}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_CRITIC_H}")
             save_checkpoint(disc_Z, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_CRITIC_Z}")
 
         print(f"saving + epoch {epoch} time: {time.time() - start_time_local} s")
 
