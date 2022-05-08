@@ -321,7 +321,7 @@ if __name__ == "__main__":
     """
     /!\ if rootdirectory isn't cycleGAN/, then it won't work /!\ 
     """
-    start_time = time.time()
+    START_TIME = time.time()
 
     parser = argparse.ArgumentParser()
 
@@ -359,7 +359,7 @@ if __name__ == "__main__":
 
     config.def_transforms()
 
-    main(start_time)
+    main(START_TIME)
 
     logger(
         f"Total time {time.time() - start_time}",
