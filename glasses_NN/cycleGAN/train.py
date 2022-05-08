@@ -317,14 +317,23 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("horses_class")
-    parser.add_argument("zebras_class")
-    parser.add_argument("skip_connection")  # can take values 0 (False), 1 (only first layer feeds last layer) or 2
-    # (every intermediaite layers during the downsampling process feed into the corresponding layers when upsampling)
-    parser.add_argument("size")
-    parser.add_argument("lambda_identity")
-    parser.add_argument("one_sided_label_smoothing")
-    parser.add_argument("repetition_number")
+    parser.add_argument("horses_class",
+                        help='Directory name (in data/train and in data/val) where are the images of class 1.')
+    parser.add_argument("zebras_class",
+                        help='Directory name (in data/train and in data/val) where are the images of class 2.')
+    parser.add_argument("skip_connection",
+                        help='Can take values 0 (False), 1 (only the first layer feeds the last layer) or 2 '
+                             '(every intermediaite layers during the downsampling process feed into the corresponding '
+                             'layers when upsampling.')
+    parser.add_argument("size",
+                        help='What size images should be resized to (size x size).')
+    parser.add_argument("lambda_identity",
+                        help='Value of lambda_identity for the loss.')
+    parser.add_argument("one_sided_label_smoothing",
+                        help='Keeping the labels from real images to be 1 but rather a random float between '
+                             '1-one_sided_label_smoothing and 1.')
+    parser.add_argument("repetition_number",
+                        help='What folder should we write in?')
 
     args = parser.parse_args()
 
