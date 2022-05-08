@@ -296,7 +296,7 @@ def main(start_time: float) -> None:
 
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                  opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch,
-                 save_val_images_transformed=(epoch%100==1))
+                 save_val_images_transformed=(epoch%config.SAUVEGARDE_TOUS_LES_CB==1))
 
         logger(
             f"epoch {epoch} time: {time.time() - start_time_local} s",
@@ -347,6 +347,10 @@ if __name__ == "__main__":
                              '1-one_sided_label_smoothing and 1.')
     parser.add_argument("repetition_number",
                         help='What folder should we write in?')
+    parser.add_argument("epoch",
+                        help='Number of epochs during which the network is trained.')
+    parser.add_argument("sauvegarde_tous_les_cb",
+                        help='How often do we save the images of the validation set?')
 
     args = parser.parse_args()
 
@@ -361,6 +365,8 @@ if __name__ == "__main__":
     config.LAMBDA_IDENTITY = float(args.lambda_identity)
     config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
     config.REPETITION_NUMBER = args.repetition_number
+    config.NUM_EPOCHS = args.epoch
+    config.SAUVEGARDE_TOUS_LES_CB = args.sauvegarde_tous_les_cb
 
     config.def_transforms()
 

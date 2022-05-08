@@ -1,5 +1,5 @@
 import torch
-import albumentations as A
+import albumentations as A  # noqa
 from albumentations.pytorch import ToTensorV2
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -10,7 +10,6 @@ LEARNING_RATE = 1e-5
 LAMBDA_CYCLE = 10
 NUM_WORKERS = 4
 CURRENT_EPOCH = 0
-NUM_EPOCHS = 200
 LOAD_MODEL = True
 SAVE_MODEL = False
 ONLY_GENERATE = False
@@ -28,6 +27,8 @@ ZEBRAS_CLASS = "argparse"
 SIZE = "argparse"
 SKIP_CONNECTION = "argparse"
 REPETITION_NUMBER = "argparse"
+NUM_EPOCHS = "argparse"
+SAUVEGARDE_TOUS_LES_CB = "argparse"
 
 transforms = None
 transforms_val_dataset = None
