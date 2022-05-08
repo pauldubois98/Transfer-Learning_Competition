@@ -47,7 +47,7 @@ done
 
 
 # Prints
-echo This is task "$SLURM_ARRAY_TASK_ID"
+echo This is task "${SLURM_ARRAY_TASK_ID}"
 echo skip_connections = "${skip_connections[$SLURM_ARRAY_TASK_ID]}"
 echo size = "${size[$SLURM_ARRAY_TASK_ID]}"
 echo lambda_identity = "${lambda_identity[$SLURM_ARRAY_TASK_ID]}"

@@ -161,16 +161,21 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                     category_path_zebras = f"{osls_path}/was_{config.ZEBRAS_CLASS}"
                     create_directory(category_path_zebras)
 
+                    epoch_folder_horses = f"{category_path_horses}/epoch_{epoch}"
+                    create_directory(epoch_folder_horses)
+                    epoch_folder_zebras = f"{category_path_zebras}/epoch_{epoch}"
+                    create_directory(epoch_folder_zebras)
+
                     if config.VAL_IMAGES_FORMAT == "both":
                         save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                                   f"{category_path_horses}/{horse_name}_epoch_{epoch}.png")
+                                   f"{epoch_folder_horses}/{horse_name}.png")
                         save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                                   f"{category_path_zebras}/{zebra_name}_epoch_{epoch}.png")
+                                   f"{epoch_folder_zebras}/{zebra_name}.png")
                     elif config.VAL_IMAGES_FORMAT == "only_gen":
                         save_image(fake_zebra * 0.5 + 0.5,
-                                   f"{category_path_horses}/{horse_name}_epoch_{epoch}.png")
+                                   f"{epoch_folder_horses}/{horse_name}.png")
                         save_image(fake_horse * 0.5 + 0.5,
-                                   f"{category_path_zebras}/{zebra_name}_epoch_{epoch}.png")
+                                   f"{epoch_folder_zebras}/{zebra_name}.png")
                     else:
                         print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
                               f"was set to {config.VAL_IMAGES_FORMAT}")
