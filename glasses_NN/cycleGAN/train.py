@@ -172,8 +172,11 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                         exit()
 
 
-def main():
-
+def main(start_time: float) -> None:
+    """
+    :param start_time: no need for it in theory but because the debugger calls main in another file, we need start_time
+    :return: None
+    """
     # To save weights or load them
     weights_folder_classe = f"weights_{config.REPETITION_NUMBER}/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
     create_directory(weights_folder_classe)
@@ -351,7 +354,7 @@ if __name__ == "__main__":
 
     config.def_transforms()
 
-    main()
+    main(start_time)
 
     logger(
         f"Total time {time.time() - start_time}",
