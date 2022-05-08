@@ -3,8 +3,6 @@ import random
 import sys
 import torch.nn as nn
 import torch.optim as optim
-import argparse
-import time
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
@@ -38,8 +36,8 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                 fake_horse = gen_H(zebra)
                 D_H_real = disc_H(horse)  # D_H_real c'est 30x30 valeurs qui doivent valoir 1
                 D_H_fake = disc_H(fake_horse.detach())  # D_H_fake c'est 30x30 valeurs qui doivent valoir 0
-                H_reals += D_H_real.mean().item()  # H_reals c'est la somme des moyennes des valeurs dans la grille 30x30
-                H_fakes += D_H_fake.mean().item()  # H_fakes c'est la somme des moyennes des valeurs dans la grille 30x30
+                H_reals += D_H_real.mean().item()  # H_reals : la somme des moyennes des valeurs dans la grille 30x30
+                H_fakes += D_H_fake.mean().item()  # H_fakes : la somme des moyennes des valeurs dans la grille 30x30
                 D_H_real_loss = mse(D_H_real,
                                     torch.ones_like(D_H_real) - random.random() * config.ONE_SIDED_LABEL_SMOOTHING)
                 D_H_fake_loss = mse(D_H_fake, torch.zeros_like(D_H_fake))
@@ -184,7 +182,8 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 
 def main(start_time: float) -> None:
     """
-    :param start_time: no need for it in theory but because the debugger calls main in another file, we need start_time
+    :param start_time: reference as to when main.py was executed / when debugger was executed. Allows us to know how
+                       long the cycleGAN is taking to do x and y.
     :return: None
     """
     # To save weights or load them
@@ -320,61 +319,3 @@ def main(start_time: float) -> None:
                                      f"{config.CHECKPOINT_CRITIC_Z}")
 
         print(f"saving + epoch {epoch} time: {time.time() - start_time_local} s")
-
-
-if __name__ == "__main__":
-    """
-    /!\ if rootdirectory isn't cycleGAN/, then it won't work /!\ 
-    """
-    START_TIME = time.time()
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("horses_class",
-                        help='Directory name (in data/train and in data/val) where are the images of class 1.')
-    parser.add_argument("zebras_class",
-                        help='Directory name (in data/train and in data/val) where are the images of class 2.')
-    parser.add_argument("skip_connection",
-                        help='Can take values 0 (False), 1 (only the first layer feeds the last layer) or 2 '
-                             '(every intermediaite layers during the downsampling process feed into the corresponding '
-                             'layers when upsampling.')
-    parser.add_argument("size",
-                        help='What size images should be resized to (size x size).')
-    parser.add_argument("lambda_identity",
-                        help='Value of lambda_identity for the loss.')
-    parser.add_argument("one_sided_label_smoothing",
-                        help='Keeping the labels from real images to be 1 but rather a random float between '
-                             '1-one_sided_label_smoothing and 1.')
-    parser.add_argument("repetition_number",
-                        help='What folder should we write in?')
-    parser.add_argument("epoch",
-                        help='Number of epochs during which the network is trained.')
-    parser.add_argument("sauvegarde_tous_les_cb",
-                        help='How often do we save the images of the validation set?')
-
-    args = parser.parse_args()
-
-    config.HORSES_CLASS = args.horses_class
-    config.ZEBRAS_CLASS = args.zebras_class
-    config.SKIP_CONNECTION = int(args.skip_connection)
-    config.SIZE = int(args.size)
-    if config.SIZE > 512:
-        config.BATCH_SIZE = 1
-    elif config.SIZE > 256:  # i.e. between 256 & 512 because of the elif clause
-        config.BATCH_SIZE = 3
-    config.LAMBDA_IDENTITY = float(args.lambda_identity)
-    config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
-    config.REPETITION_NUMBER = args.repetition_number
-    config.NUM_EPOCHS = args.epoch
-    config.SAUVEGARDE_TOUS_LES_CB = args.sauvegarde_tous_les_cb
-
-    config.def_transforms()
-
-    main(START_TIME)
-
-    logger(
-        f"Total time {time.time() - start_time}",
-        True,
-        str(time.time() - start_time),
-        "total_time"
-    )

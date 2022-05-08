@@ -17,6 +17,8 @@ if __name__ == "__main__":
     config.LAMBDA_IDENTITY = 0
     config.ONE_SIDED_LABEL_SMOOTHING = 0
     config.REPETITION_NUMBER = 1
+    config.NUM_EPOCHS = 100
+    config.SAUVEGARDE_TOUS_LES_CB = 1
 
     config.def_transforms()
 
