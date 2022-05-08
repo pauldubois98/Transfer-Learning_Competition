@@ -28,7 +28,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
         disc_Z.train()
         gen_Z.train()
         gen_H.train()
-        for idx, (zebra, horse) in enumerate(loader):
+        for idx, (zebra, horse, _, _) in enumerate(loader):
             # zebra and horses are of size (config.BATCH_SIZE, 3, 256, 256)
             zebra = zebra.to(config.DEVICE)
             horse = horse.to(config.DEVICE)
@@ -126,7 +126,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             disc_Z.eval()
             gen_Z.eval()
             gen_H.eval()
-            for idx, (zebra, horse) in enumerate(val_loader):
+            for idx, (zebra, horse, zebra_name, horse_name) in enumerate(val_loader):
                 if idx < max(2048, len(val_loader)):  # c'est sur ces images que FID va être calculé
                     # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
                     zebra = zebra.to(config.DEVICE)
@@ -158,14 +158,14 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 
                     if config.VAL_IMAGES_FORMAT == "both":
                         save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                                   f"{category_path_horses}/{idx}_epoch_{epoch}.png")
+                                   f"{category_path_horses}/{horse_name}_epoch_{epoch}.png")
                         save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                                   f"{category_path_zebras}/{idx}_epoch_{epoch}.png")
+                                   f"{category_path_zebras}/{zebra_name}_epoch_{epoch}.png")
                     elif config.VAL_IMAGES_FORMAT == "only_gen":
                         save_image(fake_zebra * 0.5 + 0.5,
-                                   f"{category_path_horses}/{idx}_epoch_{epoch}.png")
+                                   f"{category_path_horses}/{horse_name}_epoch_{epoch}.png")
                         save_image(fake_horse * 0.5 + 0.5,
-                                   f"{category_path_zebras}/{idx}_epoch_{epoch}.png")
+                                   f"{category_path_zebras}/{zebra_name}_epoch_{epoch}.png")
                     else:
                         print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
                               f"was set to {config.VAL_IMAGES_FORMAT}")
