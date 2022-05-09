@@ -54,4 +54,4 @@ echo lambda_identity = "${lambda_identity[$SLURM_ARRAY_TASK_ID]}"
 echo one_sided_label_smoothing = "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
 
 # Run python script
-python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" "${repetition_number[$SLURM_ARRAY_TASK_ID]}"
+python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" "${repetition_number[$SLURM_ARRAY_TASK_ID]}" 300 100
