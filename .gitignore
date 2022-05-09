@@ -1,3 +1,4 @@
+# Paul stuff
 data/CeterisParibusDataset
 data/fairface-img-margin025-trainval
 data/fairface-img-margin125-trainval
@@ -12,12 +13,29 @@ data/UTKface/cropped
 data/UTKface/cropped.zip
 data/UTKface/sex_subfolders
 data/UTKface/sex_subfolders.zip
-
-
 reLabelling/CeterisParibusDataset
 reLabelling/CeterisParibusDatasetWithPts
 reLabelling/test
 
+
+# Romain stuff
+/glasses_NN/cycleGAN/data
+/glasses_NN/cycleGAN/archive/
+/glasses_NN/cycleGAN/saved_images_0/
+/glasses_NN/cycleGAN/weights_0/
+/glasses_NN/cycleGAN/outs_0/
+/glasses_NN/cycleGAN/saved_images_1/
+/glasses_NN/cycleGAN/weights_1/
+/glasses_NN/cycleGAN/outs_1/
+
+
+# IDE stuff
+/.idea/
+/glasses_NN/classifier/.idea/
+/glasses_NN/cycleGAN/.idea/
+
+
+# Competition stuff that's probably on Paul's laptop
 submission.zip
 submission/
 video/
@@ -153,12 +171,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Romain
-/glasses_NN/cycleGAN/saved_images/glasses_no_glasses/
-/glasses_NN/cycleGAN/data/data/
-/glasses_NN/classifier/.idea/
-/glasses_NN/cycleGAN/.idea/
-/glasses_NN/cycleGAN/archive/
-/.idea/
-/glasses_NN/cycleGAN/data/

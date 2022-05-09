@@ -3,8 +3,6 @@ import random
 import sys
 import torch.nn as nn
 import torch.optim as optim
-import argparse
-import time
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
@@ -13,10 +11,12 @@ from dataset import HorseZebraDataset
 from utils import save_checkpoint, load_checkpoint, create_directory
 from discriminator_model import Discriminator
 from generator_model import Generator
+from logger import logger
 
 
 def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
-             opt_disc, opt_gen, scheduler_disc, scheduler_gen, l1, mse, d_scaler, g_scaler, epoch):
+             opt_disc, opt_gen, scheduler_disc, scheduler_gen, l1, mse, d_scaler, g_scaler, epoch,
+             save_val_images_transformed: bool = False):
     H_reals = 0
     H_fakes = 0
 
@@ -26,7 +26,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
         disc_Z.train()
         gen_Z.train()
         gen_H.train()
-        for idx, (zebra, horse) in enumerate(loader):
+        for idx, (zebra, horse, _, _) in enumerate(loader):
             # zebra and horses are of size (config.BATCH_SIZE, 3, 256, 256)
             zebra = zebra.to(config.DEVICE)
             horse = horse.to(config.DEVICE)
@@ -36,8 +36,8 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                 fake_horse = gen_H(zebra)
                 D_H_real = disc_H(horse)  # D_H_real c'est 30x30 valeurs qui doivent valoir 1
                 D_H_fake = disc_H(fake_horse.detach())  # D_H_fake c'est 30x30 valeurs qui doivent valoir 0
-                H_reals += D_H_real.mean().item()  # H_reals c'est la somme des moyennes des valeurs dans la grille 30x30
-                H_fakes += D_H_fake.mean().item()  # H_fakes c'est la somme des moyennes des valeurs dans la grille 30x30
+                H_reals += D_H_real.mean().item()  # H_reals : la somme des moyennes des valeurs dans la grille 30x30
+                H_fakes += D_H_fake.mean().item()  # H_fakes : la somme des moyennes des valeurs dans la grille 30x30
                 D_H_real_loss = mse(D_H_real,
                                     torch.ones_like(D_H_real) - random.random() * config.ONE_SIDED_LABEL_SMOOTHING)
                 D_H_fake_loss = mse(D_H_fake, torch.zeros_like(D_H_fake))
@@ -105,7 +105,7 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             if idx % 100 == 0 or idx == len(loader) - 1:
                 print(f"epoch {epoch} / {config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS}, batch {idx} / {len(loader)} "
                       f"H_real={H_reals/(idx+1):.2f} H_fake={H_fakes/(idx+1):.2f}, "
-                      f"lr_d = {opt_disc.param_groups[0]['lr']:.8f}, lr_g = {opt_gen.param_groups[0]['lr']:.6f}")
+                      f"lr_d = {opt_disc.param_groups[0]['lr']:.8f}, lr_g = {opt_gen.param_groups[0]['lr']:.8f}")
                 sys.stdout.flush()
 
         ### Fin du training de l'epoch, le dire au scheduler qui permet de decay le learning rate
@@ -118,44 +118,82 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
             scheduler_gen.step()
 
     # EVAL
-    with torch.no_grad():
-        disc_H.eval()
-        disc_Z.eval()
-        gen_Z.eval()
-        gen_H.eval()
-        for idx, (zebra, horse) in enumerate(val_loader):
-            if idx < max(5, len(val_loader)):  # on va les regarder à la main donc autant ne pas trop abuser sur le nombre d'images générées
-                # zebra and horses are of size (config.BATCH_SIZE, 3, 256, 256)
-                zebra = zebra.to(config.DEVICE)
-                horse = horse.to(config.DEVICE)
+    if save_val_images_transformed:
+        with torch.no_grad():
+            disc_H.eval()
+            disc_Z.eval()
+            gen_Z.eval()
+            gen_H.eval()
+            for idx, (zebra, horse, zebra_name, horse_name) in enumerate(val_loader):
+                if idx < max(2048, len(val_loader)):  # c'est sur ces images que FID va être calculé
+                    # because enumerate(val_loader) spits stuff batch by batch, zebra_name is not a string but a list
+                    # of one (because we set batch_size = 1 for the val_loader) string.
+                    zebra_name = zebra_name[0]
+                    horse_name = horse_name[0]
 
-                fake_horse = gen_H(zebra)
-                fake_zebra = gen_Z(horse)
+                    # zebra and horses are of size (config.BATCH_SIZE, 3, config.SIZE, config.SIZE)
+                    zebra = zebra.to(config.DEVICE)
+                    horse = horse.to(config.DEVICE)
 
-                class_directory_path = f"saved_images/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
-                create_directory(class_directory_path)
-                skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
-                create_directory(skip_connection_path)
-                size_path = f"{skip_connection_path}/{config.SIZE}"
-                create_directory(size_path)
-                l_identity_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
-                create_directory(l_identity_path)
-                osls_path = f"{l_identity_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
-                create_directory(osls_path)
-                validation_image_path = f"{osls_path}/{idx}"
-                create_directory(validation_image_path)
+                    fake_horse = gen_H(zebra)
+                    fake_zebra = gen_Z(horse)
 
-                save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                           f"{validation_image_path}/{config.HORSES_CLASS}_epoch_{epoch}.png")
-                save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                           f"{validation_image_path}/{config.ZEBRAS_CLASS}_epoch_{epoch}.png")
+                    class_directory_path = f"saved_images_{config.REPETITION_NUMBER}/" \
+                                           f"{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
+                    create_directory(class_directory_path)
+
+                    skip_connection_path = f"{class_directory_path}/skip_{config.SKIP_CONNECTION}"
+                    create_directory(skip_connection_path)
+
+                    size_path = f"{skip_connection_path}/{config.SIZE}"
+                    create_directory(size_path)
+
+                    l_identity_path = f"{size_path}/l_identity_{float(config.LAMBDA_IDENTITY)}"
+                    create_directory(l_identity_path)
+
+                    osls_path = f"{l_identity_path}/osls_{config.ONE_SIDED_LABEL_SMOOTHING}"
+                    create_directory(osls_path)
+
+                    category_path_horses = f"{osls_path}/was_{config.HORSES_CLASS}"
+                    create_directory(category_path_horses)
+                    category_path_zebras = f"{osls_path}/was_{config.ZEBRAS_CLASS}"
+                    create_directory(category_path_zebras)
+
+                    epoch_folder_horses = f"{category_path_horses}/epoch_{epoch}"
+                    create_directory(epoch_folder_horses)
+                    epoch_folder_zebras = f"{category_path_zebras}/epoch_{epoch}"
+                    create_directory(epoch_folder_zebras)
+
+                    if config.VAL_IMAGES_FORMAT == "both":
+                        save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
+                                   f"{epoch_folder_horses}/{horse_name}_{epoch}.png")
+                        # on ajoute quand même l'epoch dans le namefile même s'il est dans un subdirectory avec le
+                        # numéro de l'epoch pour qu'on puisse déplacer tous les fichiers (de différentes epochs)
+                        # sans perdre d'info / et sans avoir de doublons
+                        save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
+                                   f"{epoch_folder_zebras}/{zebra_name}_{epoch}.png")
+                        # même remarque
+                    elif config.VAL_IMAGES_FORMAT == "only_gen":
+                        save_image(fake_zebra * 0.5 + 0.5,
+                                   f"{epoch_folder_horses}/{horse_name}_{epoch}.png")
+                        # même remarque
+                        save_image(fake_horse * 0.5 + 0.5,
+                                   f"{epoch_folder_zebras}/{zebra_name}_{epoch}.png")
+                        # même remarque
+                    else:
+                        print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
+                              f"was set to {config.VAL_IMAGES_FORMAT}")
+                        exit()
 
 
-
-def main():
-
+def main(start_time: float) -> None:
+    """
+    :param start_time: reference as to when main.py was executed / when debugger was executed. Allows us to know how
+                       long the cycleGAN is taking to do x and y.
+    :return: None
+    """
     # To save weights or load them
-    weights_folder_classe = f"weights/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
+    weights_folder_classe = f"weights_{config.REPETITION_NUMBER}/{config.HORSES_CLASS}_{config.ZEBRAS_CLASS}"
     create_directory(weights_folder_classe)
 
     weights_folder_classe_skipconnections = f"{weights_folder_classe}/skip_{config.SKIP_CONNECTION}"
@@ -214,7 +252,7 @@ def main():
             print(f"Last epoch: {config.CURRENT_EPOCH}")
         except Exception as e:
             print(e)
-            print("Couldn't load previous model")
+            print("Couldn't load previous model (exception printed above)")
 
     scheduler_disc = optim.lr_scheduler.StepLR(opt_disc, step_size=100, gamma=0.1)
     scheduler_gen = optim.lr_scheduler.StepLR(opt_gen, step_size=100, gamma=0.1)
@@ -248,58 +286,42 @@ def main():
     g_scaler = torch.cuda.amp.GradScaler()
     d_scaler = torch.cuda.amp.GradScaler()
 
-    print(f"Initialisation: {time.time() - start_time} s")
+    logger(
+        f"Initialisation: {time.time() - start_time} s",
+        True,
+        str(time.time() - start_time),
+        "initialisation_time"
+    )
 
-    for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
+    for epoch in range(config.CURRENT_EPOCH + 1, config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS + 1):
+        # On commence à config.CURRENT_EPOCH + 1, et on en fait config.NUM_EPOCHS. Du coup on va jusqu'à
+        # config.CURENT_EPOCH + 1 + config.NUM_EPOCHS inclus du coup on va jusqu'à
+        # config.CURENT_EPOCH + 1 + config.NUM_EPOCHS + 1 exclus
         start_time_local = time.time()
 
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
-                 opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch)
+                 opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch,
+                 save_val_images_transformed=(epoch%config.SAUVEGARDE_TOUS_LES_CB==1))
 
-        print(f"epoch {epoch} time: {time.time() - start_time_local} s")
+        logger(
+            f"epoch {epoch} time: {time.time() - start_time_local} s",
+            True,
+            str(time.time() - start_time),
+            "epochs_time"
+        )
 
-        if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + config.NUM_EPOCHS):
+        if config.SAVE_MODEL and (epoch % 10 == 1 or epoch == config.CURRENT_EPOCH + 1 + config.NUM_EPOCHS):
             save_checkpoint(gen_H, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_H}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_GEN_H}")
             save_checkpoint(gen_Z, opt_gen, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_GEN_Z}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_GEN_Z}")
             save_checkpoint(disc_H, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_H}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_CRITIC_H}")
             save_checkpoint(disc_Z, opt_disc, epoch,
-                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/{config.CHECKPOINT_CRITIC_Z}")
+                            filename=f"{weights_folder_classe_skipconnections_size_li_osls}/"
+                                     f"{config.CHECKPOINT_CRITIC_Z}")
 
         print(f"saving + epoch {epoch} time: {time.time() - start_time_local} s")
-
-
-if __name__ == "__main__":
-
-    start_time = time.time()
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("horses_class")
-    parser.add_argument("zebras_class")
-    parser.add_argument("skip_connection")  # can take values 0 (False), 1 (only first layer feeds last layer) or 2
-    # (every intermediaite layers during the downsampling process feed into the corresponding layers when upsampling)
-    parser.add_argument("size")
-    parser.add_argument("lambda_identity")
-    parser.add_argument("one_sided_label_smoothing")
-
-    args = parser.parse_args()
-
-    config.HORSES_CLASS = args.horses_class
-    config.ZEBRAS_CLASS = args.zebras_class
-    config.SKIP_CONNECTION = int(args.skip_connection)
-    config.SIZE = int(args.size)
-    if config.SIZE > 512:
-        config.BATCH_SIZE = 1
-    elif config.SIZE > 256:  # i.e. between 256 & 512 because of the elif clause
-        config.BATCH_SIZE = 3
-    config.LAMBDA_IDENTITY = float(args.lambda_identity)
-    config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
-
-    config.def_transforms()
-
-    main()
-
-    print(f"Total time {time.time() - start_time}")

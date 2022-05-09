@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=glasses_no_glasses
 #SBATCH --output=outs/%x.%j.txt
-#SBATCH --array=0-2
+#SBATCH --array=0-5
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=6
@@ -18,18 +18,40 @@ module load anaconda3/2021.05/gcc-9.2.0
 source activate intercentrale2022
 
 # Array declaration, probably should be done more cleverly once I increase the number of combinations ...
-skip_connections=(0 1 2)
-size=(128 128 128)
-lambda_identity=(1 1 1)
-one_sided_label_smoothing=(0.1 0.1 0.1)
+skip_connections=()
+size=()
+lambda_identity=()
+one_sided_label_smoothing=()
+repetition_number=()
+for skip_connections_val in 0 1 2
+do
+	for size_val in 512
+	do
+		for lambda_identity_val in 1
+		do
+			for one_sided_label_smoothing_val in 0.1
+			do
+				for repetition_number_val in 0 1
+				do
+					skip_connections+=($skip_connections_val)
+					size+=($size_val)
+					lambda_identity+=($lambda_identity_val)
+					one_sided_label_smoothing+=($one_sided_label_smoothing_val)
+					repetition_number+=($repetition_number_val)
+				done
+			done
+		done
+	done
+done
+
 
 
 # Prints
-echo This is task "$SLURM_ARRAY_TASK_ID"
+echo This is task "${SLURM_ARRAY_TASK_ID}"
 echo skip_connections = "${skip_connections[$SLURM_ARRAY_TASK_ID]}"
 echo size = "${size[$SLURM_ARRAY_TASK_ID]}"
 echo lambda_identity = "${lambda_identity[$SLURM_ARRAY_TASK_ID]}"
 echo one_sided_label_smoothing = "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
 
 # Run python script
-python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
+python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" "${repetition_number[$SLURM_ARRAY_TASK_ID]}" 300 100
