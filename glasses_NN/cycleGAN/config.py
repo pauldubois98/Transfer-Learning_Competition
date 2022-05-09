@@ -29,6 +29,7 @@ SKIP_CONNECTION = "argparse"
 REPETITION_NUMBER = "argparse"
 NUM_EPOCHS = "argparse"
 SAUVEGARDE_TOUS_LES_CB = "argparse"
+HOW_MANY_VAL_SAVED = "argparse"
 
 transforms = None
 transforms_val_dataset = None

@@ -19,6 +19,7 @@ if __name__ == "__main__":
     config.REPETITION_NUMBER = 1
     config.NUM_EPOCHS = 100
     config.SAUVEGARDE_TOUS_LES_CB = 1
+    config.HOW_MANY_VAL_SAVED = 5
 
     config.def_transforms()
 

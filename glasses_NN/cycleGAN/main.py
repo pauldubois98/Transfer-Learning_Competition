@@ -34,6 +34,8 @@ if __name__ == "__main__":
                         help='Number of epochs during which the network is trained.')
     parser.add_argument("sauvegarde_tous_les_cb",
                         help='How often do we save the images of the validation set?')
+    parser.add_argument("how_many_val_saved",
+                        help='How many validaiton set images are saved?')
 
     args = parser.parse_args()
 
@@ -50,6 +52,7 @@ if __name__ == "__main__":
     config.REPETITION_NUMBER = args.repetition_number
     config.NUM_EPOCHS = args.num_epoch
     config.SAUVEGARDE_TOUS_LES_CB = args.sauvegarde_tous_les_cb
+    config.HOW_MANY_VAL_SAVED = args.how_many_val_saved
 
     config.def_transforms()
 
