@@ -166,14 +166,20 @@ def train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
 
                     if config.VAL_IMAGES_FORMAT == "both":
                         save_image(torch.cat((horse * 0.5 + 0.5, fake_zebra * 0.5 + 0.5)),
-                                   f"{epoch_folder_horses}/{horse_name}.png")
+                                   f"{epoch_folder_horses}/{horse_name}_{epoch}.png")
+                        # on ajoute quand même l'epoch dans le namefile même s'il est dans un subdirectory avec le
+                        # numéro de l'epoch pour qu'on puisse déplacer tous les fichiers (de différentes epochs)
+                        # sans perdre d'info / et sans avoir de doublons
                         save_image(torch.cat((zebra * 0.5 + 0.5, fake_horse * 0.5 + 0.5)),
-                                   f"{epoch_folder_zebras}/{zebra_name}.png")
+                                   f"{epoch_folder_zebras}/{zebra_name}_{epoch}.png")
+                        # même remarque
                     elif config.VAL_IMAGES_FORMAT == "only_gen":
                         save_image(fake_zebra * 0.5 + 0.5,
-                                   f"{epoch_folder_horses}/{horse_name}.png")
+                                   f"{epoch_folder_horses}/{horse_name}_{epoch}.png")
+                        # même remarque
                         save_image(fake_horse * 0.5 + 0.5,
-                                   f"{epoch_folder_zebras}/{zebra_name}.png")
+                                   f"{epoch_folder_zebras}/{zebra_name}_{epoch}.png")
+                        # même remarque
                     else:
                         print(f"Fatal Error: config.VAL_IMAGES_FORMAT can only be \"both\" or \"only_gen\" and"
                               f"was set to {config.VAL_IMAGES_FORMAT}")

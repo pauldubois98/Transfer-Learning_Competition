@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=glasses_no_glasses
 #SBATCH --output=outs/%x.%j.txt
-#SBATCH --array=0-11
+#SBATCH --array=0-5
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=6
@@ -25,7 +25,7 @@ one_sided_label_smoothing=()
 repetition_number=()
 for skip_connections_val in 0 1 2
 do
-	for size_val in 128 256
+	for size_val in 512
 	do
 		for lambda_identity_val in 1
 		do

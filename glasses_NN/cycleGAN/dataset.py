@@ -46,4 +46,8 @@ class HorseZebraDataset(Dataset):
             # see the transform definition in config.py and https://albumentations.ai/docs/examples/example_multi_target
             # for more details
 
+        # so that there isn't the extension in the img name
+        zebra_img_name = zebra_img_name.split(".")[0]
+        horse_img_name = horse_img_name.split(".")[0]
+
         return zebra_img, horse_img, zebra_img_name, horse_img_name
