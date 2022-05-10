@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --job-name=glasses_no_glasses
 #SBATCH --output=outs/%x.%j.txt
-#SBATCH --array=0-5
+#SBATCH --array=0-3
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=6
-#SBATCH --time=24:00:00
-#SBATCH --partition=gpu
+#SBATCH --time=72:00:00
+#SBATCH --partition=gpup100
 #SBATCH --mem=20G
 
 # Load necessary modules
@@ -29,9 +29,9 @@ do
 	do
 		for lambda_identity_val in 0
 		do
-			for one_sided_label_smoothing_val in 0.1 0.7
+			for one_sided_label_smoothing_val in 0.09 0.69
 			do
-				for repetition_number_val in 0
+				for repetition_number_val in 0 1
 				do
 					skip_connections+=($skip_connections_val)
 					size+=($size_val)
@@ -54,4 +54,4 @@ echo lambda_identity = "${lambda_identity[$SLURM_ARRAY_TASK_ID]}"
 echo one_sided_label_smoothing = "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}"
 
 # Run python script
-python3.9 train.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" "${repetition_number[$SLURM_ARRAY_TASK_ID]}" 300 1 5
+python3.9 main.py glasses no_glasses "${skip_connections[$SLURM_ARRAY_TASK_ID]}" "${size[$SLURM_ARRAY_TASK_ID]}" "${lambda_identity[$SLURM_ARRAY_TASK_ID]}" "${one_sided_label_smoothing[$SLURM_ARRAY_TASK_ID]}" "${repetition_number[$SLURM_ARRAY_TASK_ID]}" 300 1 5
