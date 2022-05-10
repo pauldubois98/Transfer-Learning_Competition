@@ -300,9 +300,10 @@ def main(start_time: float) -> None:
         # config.CURENT_EPOCH + 1 + config.NUM_EPOCHS + 1 exclus
         start_time_local = time.time()
 
+        save_val_images_transformed = config.SAUVEGARDE_TOUS_LES_CB == 1 | (epoch%config.SAUVEGARDE_TOUS_LES_CB==1)
         train_fn(disc_H, disc_Z, gen_Z, gen_H, loader, val_loader,
                  opt_disc, opt_gen, scheduler_disc, scheduler_gen, L1, mse, d_scaler, g_scaler, epoch,
-                 save_val_images_transformed=(epoch%config.SAUVEGARDE_TOUS_LES_CB==1))
+                 save_val_images_transformed=save_val_images_transformed)
 
         logger(
             f"epoch {epoch} time: {time.time() - start_time_local} s",
