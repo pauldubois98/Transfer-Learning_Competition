@@ -50,9 +50,9 @@ if __name__ == "__main__":
     config.LAMBDA_IDENTITY = float(args.lambda_identity)
     config.ONE_SIDED_LABEL_SMOOTHING = float(args.one_sided_label_smoothing)
     config.REPETITION_NUMBER = args.repetition_number
-    config.NUM_EPOCHS = args.num_epoch
-    config.SAUVEGARDE_TOUS_LES_CB = args.sauvegarde_tous_les_cb
-    config.HOW_MANY_VAL_SAVED = args.how_many_val_saved
+    config.NUM_EPOCHS = int(args.num_epoch)
+    config.SAUVEGARDE_TOUS_LES_CB = int(args.sauvegarde_tous_les_cb)
+    config.HOW_MANY_VAL_SAVED = int(args.how_many_val_saved)
 
     config.def_transforms()
 
